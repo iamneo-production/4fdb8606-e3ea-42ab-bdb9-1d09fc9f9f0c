@@ -1,0 +1,122 @@
+package com.loan.management.loanapprovalservice.service;
+
+import com.loan.management.loanapprovalservice.config.CreditBureauServiceClient;
+import com.loan.management.loanapprovalservice.config.LoanOfficeService;
+import com.loan.management.loanapprovalservice.dto.LoanDTO;
+import com.loan.management.loanapprovalservice.exceptions.InsuficientLoanRequestException;
+import com.loan.management.loanapprovalservice.exceptions.NoRecordFoundException;
+import com.loan.management.loanapprovalservice.model.*;
+import com.loan.management.loanapprovalservice.repsitory.LoanRepository;
+import feign.FeignException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class LoanApprovalService {
+
+    private  double maxLoanAmount;
+    private  final double creditScore=200;
+    private  double interestPercentage;
+    private double interest_percentage_for_salaried=0.20;
+    private double getInterest_percentage_for_self_emp=0.25;
+
+    private final LoanRepository loanRepository;
+   // private final CreditBureauServiceClient creditService;
+    //private final LoanOfficeService officerService;
+
+
+    private void setInterest_percentage_for_salaried(double percentage){
+        interest_percentage_for_salaried=percentage;
+    }
+
+    private void setGetInterest_percentage_for_self_emp(double percentage){
+        getInterest_percentage_for_self_emp=percentage;
+    }
+
+    private double setMaxLoanAmount(LoanType type){
+        switch (type){
+            case HOME: return 10000000;
+            case VEHICLE:return 5000000;
+            case PERSONAL:return 1000000;
+            default:throw new RuntimeException("unsupported loan type");
+        }
+
+    }
+
+
+    private double getUserCreditScore(Integer customerId){
+        double creditScore=0;
+            //creditScore = creditService.getCreditScore(customerId);
+        return creditScore;
+    }
+
+    private double setInterestPercentage(EmployementType type){
+        switch (type){
+            case SALARIED: return interest_percentage_for_salaried;
+            case SELF_EMPLOYEED:return getInterest_percentage_for_self_emp;
+            default:throw new RuntimeException("unsupported EmploymentType type");
+        }
+    }
+
+    private double monthlyInterest(double loanAmount){
+        return (loanAmount* interestPercentage)/12;
+    }
+    private boolean isApplicable(double loan_amount, double income, Integer customerId) throws InsuficientLoanRequestException {
+
+
+        if(loan_amount>maxLoanAmount){
+            throw new InsuficientLoanRequestException("requested loan amount is greater than maximum amount");
+        }
+        if(this.creditScore>getUserCreditScore(customerId)){
+            throw new InsuficientLoanRequestException("not enough credit score");
+        }
+
+        if (monthlyInterest(loan_amount)>income){
+            throw new InsuficientLoanRequestException("not enough income");
+        }
+        return true;
+    }
+
+    private void loadData(Loan loanDTO){
+        maxLoanAmount=setMaxLoanAmount(loanDTO.getLoanType());
+        interestPercentage = setInterestPercentage(loanDTO.getCustomer().getEmployementType());
+        if ((maxLoanAmount==0)&&(creditScore==0)){throw new RuntimeException("insufficient data");}
+    }
+
+   /* private void updateDatabase(){
+        List<Loan> loanApplications = officerService.getLoanApplications();
+        for(Loan loan:loanApplications){
+            loanRepository.save(loan);
+        }
+    }
+*/
+
+    public String approve(Integer loanId) throws NoRecordFoundException, InsuficientLoanRequestException {
+        //updateDatabase();
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new NoRecordFoundException("invalid loan number"));
+
+        loadData(loan);
+        boolean applicable = isApplicable(loan.getLoanAmount(), loan.getTenureInMonths(), loan.getCustomer().getUserId());
+        if(applicable){
+            loan.setLoanStatus(LoanStatus.APPROVED);
+            loanRepository.save(loan);
+        }
+
+        return "approved";
+    }
+
+    public LoanStatus getLoanStatus(Integer loanId) throws NoRecordFoundException {
+        if(loanId!=null) {
+            Loan loan = loanRepository.findById(loanId)
+                    .orElseThrow(() -> new NoRecordFoundException("invalid loan number"));
+            return loan.getLoanStatus();
+        }else{
+            throw new NoRecordFoundException("invalid loan number");
+        }
+    }
+}

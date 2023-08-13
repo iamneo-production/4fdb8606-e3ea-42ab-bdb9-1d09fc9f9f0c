@@ -1,0 +1,27 @@
+package com.loan.management.loanapprovalservice.dto;
+
+import com.loan.management.loanapprovalservice.model.LoanStatus;
+import com.loan.management.loanapprovalservice.model.LoanType;
+import com.loan.management.loanapprovalservice.model.User;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class LoanDTO {
+    private Integer loanId;
+    private LoanStatus loanStatus;
+    private LoanType loanType;
+    private Double loanAmount;
+    private LocalDate appliedDate;
+    private Integer tenureInMonths;
+    //    @ManyToOne
+//    @JoinColumn(name = "User_ID")
+    private User customer;
+}

@@ -1,0 +1,59 @@
+package com.loan.management.loanapprovalservice.controller;
+
+import com.loan.management.loanapprovalservice.dto.LoanDTO;
+import com.loan.management.loanapprovalservice.exceptions.InsuficientLoanRequestException;
+import com.loan.management.loanapprovalservice.exceptions.NoRecordFoundException;
+import com.loan.management.loanapprovalservice.model.*;
+import com.loan.management.loanapprovalservice.repsitory.LoanRepository;
+import com.loan.management.loanapprovalservice.service.LoanApprovalService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+
+@RestController
+@RequestMapping(value = "api/loanApproval")
+@CrossOrigin("*")
+@RequiredArgsConstructor
+public class LoanApprovalController {
+
+    private final LoanApprovalService loanApprovalService;
+
+    //test
+    private final LoanRepository loanRepository;
+    @PostMapping("/processApplication")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> processApproval(@RequestParam(value = "loanId")Integer loanId) throws NoRecordFoundException, InsuficientLoanRequestException {
+        //test--------------------------------------
+        Loan loan = Loan.builder()
+                .loanAmount(1000.0)
+                .appliedDate(LocalDate.now())
+                .loanStatus(LoanStatus.PENDING)
+                .loanType(LoanType.PERSONAL)
+                .customer(User.builder()
+                        .firstName("test")
+                        .lastName("test")
+                        .email("testa@gmail.com")
+                        .address("test")
+                        .employementType(EmployementType.SALARIED)
+                        .build())
+                .tenureInMonths(100000)
+                .loanAmount(20000.00)
+                .build();
+
+        loanRepository.save(loan);
+       //-----------------------------------------------
+
+        loanApprovalService.approve(loanId);
+        return ResponseEntity.ok("loanId: "+"APPROVED");
+    }
+
+
+    @GetMapping("/processApplication/status/{loanId}")
+    public ResponseEntity<LoanStatus> LoanStatus(@PathVariable(value = "loanId")Integer loanId) throws NoRecordFoundException {
+        return ResponseEntity.ok(loanApprovalService.getLoanStatus(loanId));
+    }
+
+}

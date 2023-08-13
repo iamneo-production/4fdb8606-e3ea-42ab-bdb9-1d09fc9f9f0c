@@ -1,0 +1,7 @@
+package com.loan.management.loanapprovalservice.exceptions;
+
+public class InsuficientLoanRequestException extends Exception{
+    public InsuficientLoanRequestException(String message){
+        super(message);
+    }
+}

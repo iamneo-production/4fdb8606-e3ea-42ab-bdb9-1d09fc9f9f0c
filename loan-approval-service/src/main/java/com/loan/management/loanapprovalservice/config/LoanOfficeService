@@ -1,0 +1,17 @@
+package com.loan.management.loanapprovalservice.config;
+
+import com.loan.management.loanapprovalservice.dto.LoanDTO;
+import com.loan.management.loanapprovalservice.model.Loan;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.List;
+
+//@FeignClient(name = "loan-officer-service", url = "http://localhost:8080")
+public interface LoanOfficeService {
+
+    @GetMapping(value = "/api/loanOfficer/pendingApplications")
+    List<Loan> getLoanApplications();
+}
+

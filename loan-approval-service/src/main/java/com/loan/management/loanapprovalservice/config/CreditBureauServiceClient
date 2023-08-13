@@ -1,0 +1,20 @@
+package com.loan.management.loanapprovalservice.config;
+
+import com.loan.management.loanapprovalservice.dto.LoanDTO;
+import com.loan.management.loanapprovalservice.model.Loan;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.List;
+
+//@FeignClient(name = "Credit-Bureau-Service", url = "http://localhost:8080")
+public interface CreditBureauServiceClient {
+
+    @GetMapping(value = "/api/creditBureau/getCreditInfo/{customerId}")
+    double getCreditScore(@PathVariable(value = "customerId")Integer customerId);
+
+
+
+}

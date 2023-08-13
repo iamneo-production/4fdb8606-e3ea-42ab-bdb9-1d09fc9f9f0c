@@ -1,0 +1,40 @@
+package com.loan.management.loanapprovalservice.advice;
+
+import com.loan.management.loanapprovalservice.exceptions.InsuficientLoanRequestException;
+import com.loan.management.loanapprovalservice.exceptions.NoRecordFoundException;
+import feign.FeignException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+import java.util.Map;
+@RestControllerAdvice
+public class ExceptionAdviceHandler {
+
+
+    @ExceptionHandler(InsuficientLoanRequestException.class)
+    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
+    public Map<String, String> insuficientLoanRequestException(InsuficientLoanRequestException exception){
+        Map<String, String> errorMap=new HashMap<>();
+       errorMap.put("Error Message: ", exception.getMessage());
+       return errorMap;
+    }
+
+    @ExceptionHandler(NoRecordFoundException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> noRecordFoundException(NoRecordFoundException exception){
+        Map<String, String> errorMap=new HashMap<>();
+        errorMap.put("Error Message: ", exception.getMessage());
+        return errorMap;
+    }
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String,String> serviceNotFound(FeignException.FeignClientException exception){
+        Map<String, String> errorMap=new HashMap<>();
+        errorMap.put("Error Message: ", exception.getMessage());
+        return errorMap;
+    }
+
+}

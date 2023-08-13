@@ -1,0 +1,37 @@
+package com.loan.management.loanapprovalservice.model;
+
+import jakarta.persistence.*;
+import jakarta.persistence.JoinColumn;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+
+import java.time.LocalDate;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+public class Loan {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer loanId;
+    @Enumerated(EnumType.STRING)
+    private LoanStatus loanStatus;
+    @Enumerated(EnumType.STRING)
+    private LoanType loanType;
+    private double loanAmount;
+    private LocalDate appliedDate;
+    private Integer tenureInMonths;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "userId")
+    private User customer;
+
+
+
+}
+
+
